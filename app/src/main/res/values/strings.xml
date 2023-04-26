@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Pomodoro</string>
+    <string name="action_button_start">start</string>
+    <string name="action_button_pause">pause</string>
+    <string name="action_button_resume">resume</string>
+
+    <string name="state_info_idle">"Hi. Start your work session \uD83D\uDE0A"</string>
+    <string name="state_info_session">Time to do some work 🤓</string>
+    <string name="state_info_break">Break 🙂</string>
+    <string name="state_info_pause">Pause</string>
 </resources>
