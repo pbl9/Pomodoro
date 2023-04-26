@@ -9,6 +9,6 @@ data class JournalEntity(
     @PrimaryKey(autoGenerate = true) val id: Long,
     @ColumnInfo(name = "session_number") val sessionNumber: Int,
     @ColumnInfo(name = "timestamp") val timestamp: Long,
-    //event - start of session, end of session, start of break, end of break, pause
-) {
-}
+    @ColumnInfo(name = "event") val event: JournalEvent,
+    @ColumnInfo(name = "elapsed_time") val elapsedTime: Long,
+)
