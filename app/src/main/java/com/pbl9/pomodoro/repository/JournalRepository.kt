@@ -97,9 +97,3 @@ class JournalRepository(private val journalDao: JournalDao) {
 
 
 }
-/*
-* 1. Start -> timestamp = 0, elapsedTime = 0
-* 2. Pause -> timestamp = x, elapsedTime = x
-* 3. Start -> timestamp = y, elapsedTime = x
-* 4. Pause -> timestamp = y + z, elapsedTime = x + z - y
-* */
