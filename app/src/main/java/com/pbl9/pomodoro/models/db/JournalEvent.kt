@@ -1,5 +1,5 @@
 package com.pbl9.pomodoro.models.db
 
 enum class JournalEvent {
-    SESSION_START, BREAK_START, PAUSE
+    SESSION_START, SESSION_RESUME, BREAK_START, BREAK_RESUME, PAUSE
 }
