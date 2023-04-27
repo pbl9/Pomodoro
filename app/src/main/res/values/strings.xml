@@ -10,4 +10,11 @@
     <string name="state_info_pause">Pause</string>
 
     <string name="session_number_format">%d/4</string>
+
+    <string name="service_pause_title">Break</string>
+    <string name="service_pause_text">Go to the app to resume</string>
+    <string name="service_session">Active session</string>
+    <string name="service_break">Break</string>
+    <string name="service_session_number_format">Session %d of 4</string>
+
 </resources>
