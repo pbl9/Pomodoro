@@ -1,22 +1,29 @@
 package com.pbl9.pomodoro
 
-import androidx.appcompat.app.AppCompatActivity
+import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.pbl9.pomodoro.databinding.ActivityMainBinding
 import com.pbl9.pomodoro.models.states.AppState
+import com.pbl9.pomodoro.utils.SimpleVibrator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val viewModel: MainActivityViewModel by viewModels()
+    private val simpleVibrator by lazy {
+        SimpleVibrator(this)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,6 +32,7 @@ class MainActivity : AppCompatActivity() {
 
         setupActionButton()
         observeAppState()
+        observeSideEffects()
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -38,6 +46,19 @@ class MainActivity : AppCompatActivity() {
     private fun setupActionButton() {
         binding.actionButton.setOnClickListener {
             viewModel.doAction()
+        }
+    }
+
+    private fun observeSideEffects() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.effectFlow.collect {
+                    when(it) {
+                        Effect.SESSION_BREAK_END -> simpleVibrator.vibrate()
+                        Effect.WORK_END -> playSound()
+                    }
+                }
+            }
         }
     }
 
@@ -61,4 +82,11 @@ class MainActivity : AppCompatActivity() {
 
         binding.actionButton.text = getString(appState.actionButtonTextRes)
     }
+
+    private fun playSound() {
+        val notification: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        val r = RingtoneManager.getRingtone(this, notification)
+        r.play()
+    }
 }
+

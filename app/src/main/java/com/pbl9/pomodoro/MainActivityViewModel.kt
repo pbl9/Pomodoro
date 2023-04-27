@@ -22,6 +22,9 @@ class MainActivityViewModel @Inject constructor(private val journalRepository: J
     private val journal =
         journalRepository.getLastJournalFlow().stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
+    private val _effectFlow = MutableSharedFlow<Effect>()
+    val effectFlow: SharedFlow<Effect> get() = _effectFlow
+
     val appState = journal.map {
         when (it?.event) {
             JournalEvent.SESSION_START -> {
@@ -125,8 +128,11 @@ class MainActivityViewModel @Inject constructor(private val journalRepository: J
         viewModelScope.launch {
             if(appState.value is AppState.Session) {
                 val eventToSave = if(appState.value.sessionNumber < 4) JournalEvent.BREAK_START else JournalEvent.WORK_END
+                val effect = if(eventToSave == JournalEvent.BREAK_START) Effect.SESSION_BREAK_END else Effect.WORK_END
+                _effectFlow.emit(effect)
                 journalRepository.saveEvent(eventToSave)
             } else if(appState.value is AppState.Break) {
+                _effectFlow.emit(Effect.SESSION_BREAK_END)
                 journalRepository.saveEvent(JournalEvent.SESSION_START)
             }
         }
