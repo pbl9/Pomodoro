@@ -8,4 +8,6 @@
     <string name="state_info_session">Time to do some work 🤓</string>
     <string name="state_info_break">Break 🙂</string>
     <string name="state_info_pause">Pause</string>
+
+    <string name="session_number_format">%d/4</string>
 </resources>
