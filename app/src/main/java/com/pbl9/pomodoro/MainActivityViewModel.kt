@@ -6,6 +6,8 @@ import com.pbl9.pomodoro.models.db.JournalEntity
 import com.pbl9.pomodoro.models.db.JournalEvent
 import com.pbl9.pomodoro.models.states.AppState
 import com.pbl9.pomodoro.repository.JournalRepository
+import com.pbl9.pomodoro.utils.Constants.BREAK_DURATION_IN_SECONDS
+import com.pbl9.pomodoro.utils.Constants.SESSION_DURATION_IN_SECONDS
 import com.pbl9.pomodoro.utils.TimeFormatter
 import com.pbl9.pomodoro.utils.timerFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,6 +20,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(private val journalRepository: JournalRepository) :
     ViewModel() {
+
+    private var journalObserveJob: Job? = null
 
     private val journal =
         journalRepository.getLastJournalFlow().stateIn(viewModelScope, SharingStarted.Eagerly, null)
@@ -55,9 +59,8 @@ class MainActivityViewModel @Inject constructor(private val journalRepository: J
         AppState.Idle
     )
 
-
-    init {
-        viewModelScope.launch {
+    fun observeJournal() {
+        journalObserveJob = viewModelScope.launch {
             journal.collectLatest {
                 when (it?.event) {
                     JournalEvent.SESSION_START -> {
@@ -89,6 +92,11 @@ class MainActivityViewModel @Inject constructor(private val journalRepository: J
                 }
             }
         }
+    }
+
+    fun stopObservingJournal() {
+        journalObserveJob?.cancel()
+        stopCounting()
     }
 
     private fun getRemainedSecondsAfterResume(entity: JournalEntity): Long {
@@ -155,10 +163,5 @@ class MainActivityViewModel @Inject constructor(private val journalRepository: J
                 }
             }
         }
-    }
-
-    companion object {
-        const val SESSION_DURATION_IN_SECONDS = 10L
-        const val BREAK_DURATION_IN_SECONDS = 5L//5 * 60L
     }
 }

@@ -1,7 +1,6 @@
 package com.pbl9.pomodoro
 
-import android.media.RingtoneManager
-import android.net.Uri
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -11,7 +10,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.pbl9.pomodoro.databinding.ActivityMainBinding
 import com.pbl9.pomodoro.models.states.AppState
+import com.pbl9.pomodoro.service.JournalService
 import com.pbl9.pomodoro.utils.SimpleVibrator
+import com.pbl9.pomodoro.utils.playNotificationSound
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -55,7 +56,7 @@ class MainActivity : AppCompatActivity() {
                 viewModel.effectFlow.collect {
                     when(it) {
                         Effect.SESSION_BREAK_END -> simpleVibrator.vibrate()
-                        Effect.WORK_END -> playSound()
+                        Effect.WORK_END -> playNotificationSound()
                     }
                 }
             }
@@ -72,6 +73,25 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        Intent(applicationContext, JournalService::class.java).apply {
+            action = JournalService.ACTION_STOP
+            startService(this)
+        }
+        viewModel.observeJournal()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Intent(applicationContext, JournalService::class.java).apply {
+            action = JournalService.ACTION_START
+            startService(this)
+        }
+        viewModel.stopObservingJournal()
+    }
+
+
     private fun bindAppStateToView(appState: AppState) {
         binding.sessionTextView.text = if(appState.sessionNumber > 0) getString(R.string.session_number_format, appState.sessionNumber) else ""
         binding.stateInfoTextView.text = getString(appState.stateInfoTextRes)
@@ -81,12 +101,6 @@ class MainActivity : AppCompatActivity() {
         binding.timerTextView.setTextColor(textColor)
 
         binding.actionButton.text = getString(appState.actionButtonTextRes)
-    }
-
-    private fun playSound() {
-        val notification: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-        val r = RingtoneManager.getRingtone(this, notification)
-        r.play()
     }
 }
 
