@@ -9,7 +9,7 @@ class JournalRepository(private val journalDao: JournalDao) {
     suspend fun saveEvent(event: JournalEvent) {
         val lastEntity = journalDao.getLastEntity()
         val entity = if(lastEntity == null) { //database is empty, start new session
-            if(event == JournalEvent.SESSION_START) JournalEntity(event = event, sessionNumber = 1, elapsedTime = 0)
+            if(event == JournalEvent.SESSION_START) JournalEntity(event = event, sessionNumber = 1, elapsedTimeMillis = 0)
             else throw IllegalStateException("Illegall state, database is empty so first event must be SESSION_START")
         } else {
             createNewEntityBasedOnPrevious(event, lastEntity)
@@ -22,10 +22,10 @@ class JournalRepository(private val journalDao: JournalDao) {
         lastEntity.previousEvent?.let {
             when (it) {
                 JournalEvent.SESSION_RESUME, JournalEvent.SESSION_START -> {
-                    JournalEntity(event = JournalEvent.SESSION_RESUME, sessionNumber = lastEntity.sessionNumber, elapsedTime = lastEntity.elapsedTime, previousEvent = JournalEvent.PAUSE)
+                    JournalEntity(event = JournalEvent.SESSION_RESUME, sessionNumber = lastEntity.sessionNumber, elapsedTimeMillis = lastEntity.elapsedTimeMillis, previousEvent = JournalEvent.PAUSE)
                 }
                 JournalEvent.BREAK_START, JournalEvent.BREAK_RESUME -> {
-                    JournalEntity(event = JournalEvent.BREAK_RESUME, sessionNumber = lastEntity.sessionNumber, elapsedTime = lastEntity.elapsedTime, previousEvent = JournalEvent.PAUSE)
+                    JournalEntity(event = JournalEvent.BREAK_RESUME, sessionNumber = lastEntity.sessionNumber, elapsedTimeMillis = lastEntity.elapsedTimeMillis, previousEvent = JournalEvent.PAUSE)
                 }
                 else -> {
                     null
@@ -47,7 +47,7 @@ class JournalRepository(private val journalDao: JournalDao) {
                 JournalEntity(
                     event = eventToSave,
                     sessionNumber = previous.sessionNumber + 1,
-                    elapsedTime = 0,
+                    elapsedTimeMillis = 0,
                     previousEvent = previous.event
                 )
             }
@@ -55,17 +55,17 @@ class JournalRepository(private val journalDao: JournalDao) {
                 JournalEntity(
                     event = eventToSave,
                     sessionNumber = previous.sessionNumber,
-                    elapsedTime = 0,
+                    elapsedTimeMillis = 0,
                     previousEvent = previous.event
                 )
             }
             JournalEvent.PAUSE -> {
                 val now = System.currentTimeMillis()
-                val newElapsedTime = previous.elapsedTime + now - previous.timestamp
+                val newElapsedTime = previous.elapsedTimeMillis + now - previous.timestamp
                 JournalEntity(
                     event = eventToSave,
                     sessionNumber = previous.sessionNumber,
-                    elapsedTime = newElapsedTime,
+                    elapsedTimeMillis = newElapsedTime,
                     previousEvent = previous.event
                 )
             }
@@ -73,7 +73,7 @@ class JournalRepository(private val journalDao: JournalDao) {
                 JournalEntity(
                     event = eventToSave,
                     sessionNumber = previous.sessionNumber,
-                    elapsedTime = previous.elapsedTime,
+                    elapsedTimeMillis = previous.elapsedTimeMillis,
                     previousEvent = previous.event
                 )
             }
@@ -81,8 +81,16 @@ class JournalRepository(private val journalDao: JournalDao) {
                 JournalEntity(
                     event = eventToSave,
                     sessionNumber = previous.sessionNumber,
-                    elapsedTime = previous.elapsedTime,
+                    elapsedTimeMillis = previous.elapsedTimeMillis,
                     previousEvent = previous.event
+                )
+            }
+            JournalEvent.WORK_END -> {
+                JournalEntity(
+                    event = eventToSave,
+                    sessionNumber = 0,
+                    previousEvent = previous.event,
+                    elapsedTimeMillis = 0,
                 )
             }
         }

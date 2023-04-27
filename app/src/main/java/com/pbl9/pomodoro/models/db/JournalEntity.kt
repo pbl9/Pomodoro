@@ -10,6 +10,6 @@ data class JournalEntity(
     @ColumnInfo(name = "timestamp") val timestamp: Long = System.currentTimeMillis(),
     @ColumnInfo(name = "session_number") val sessionNumber: Int,
     @ColumnInfo(name = "event") val event: JournalEvent,
-    @ColumnInfo(name = "elapsed_time") val elapsedTime: Long,
+    @ColumnInfo(name = "elapsed_time") val elapsedTimeMillis: Long,
     @ColumnInfo(name = "prevoius_event") val previousEvent: JournalEvent? = null
 )
