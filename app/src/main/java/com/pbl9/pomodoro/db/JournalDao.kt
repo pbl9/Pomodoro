@@ -9,10 +9,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface JournalDao {
 
-    @Query("SELECT * FROM journal LIMIT 1")
+    @Query("SELECT * FROM journal  ORDER BY id DESC LIMIT 1")
     suspend fun getLastEntity(): JournalEntity?
 
-    @Query("SELECT * FROM journal LIMIT 1")
+    @Query("SELECT * FROM journal ORDER BY id DESC LIMIT 1")
     fun getLastEntityFlow(): Flow<JournalEntity>
 
     @Insert
